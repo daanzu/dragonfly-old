@@ -170,8 +170,7 @@ class Window(object):
             windll.kernel32.QueryFullProcessImageNameW(handle, 0, pointer(buf), pointer(buf_len))
         except Exception, e:
             # GetModuleFileNameExW works in XP, but fails with 32-bit python querying 64-bit processes in Windows 8
-            windll.psapi.GetModuleFileNameExW(handle, 0, pointer(buf), buf_len)
-            return ""
+            windll.psapi.GetModuleFileNameExW(handle, 0, pointer(buf), buf_len.value)
         finally:
             # Don't leak handle
             windll.kernel32.CloseHandle(handle)
