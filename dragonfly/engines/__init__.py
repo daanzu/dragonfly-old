@@ -25,7 +25,6 @@ Main SR engine back-end interface
 """
 
 import logging
-import traceback
 from .base import EngineBase, EngineError, MimicFailure
 
 
@@ -34,7 +33,7 @@ from .base import EngineBase, EngineError, MimicFailure
 _default_engine = None
 _engines_by_name = {}
 
-def get_engine(name=None):
+def get_engine(name=None, **kwargs):
     global _default_engine, _engines_by_name
     log = logging.getLogger("engine")
 
@@ -59,8 +58,6 @@ def get_engine(name=None):
             message = ("Exception while initializing natlink engine:"
                        " %s" % (e,))
             log.exception(message)
-            traceback.print_exc()
-            print message
             if name:
                 raise EngineError(message)
 
@@ -77,8 +74,54 @@ def get_engine(name=None):
             message = ("Exception while initializing sapi5 engine:"
                        " %s" % (e,))
             log.exception(message)
-            traceback.print_exc()
-            print message
+            if name:
+                raise EngineError(message)
+
+    if not name or name == "sapi5_private":
+        # Attempt to retrieve the private sapi5 back-end.
+        try:
+            from .backend_sapi5 import is_engine_available
+            from .backend_sapi5 import get_engine as get_specific_engine
+            if is_engine_available(private=True):
+                _default_engine = get_specific_engine(private=True)
+                _engines_by_name["sapi5_private"] = _default_engine
+                return _default_engine
+        except Exception, e:
+            message = ("Exception while initializing sapi5_private engine:"
+                       " %s" % (e,))
+            log.exception(message)
+            if name:
+                raise EngineError(message)
+
+    if not name or name == "sapi5_daanzu":
+        # Attempt to retrieve the daanzu sapi5 back-end.
+        try:
+            from .backend_sapi5_daanzu import is_engine_available
+            from .backend_sapi5_daanzu import get_engine as get_specific_engine
+            if is_engine_available(**kwargs):
+                _default_engine = get_specific_engine(**kwargs)
+                _engines_by_name["sapi5_daanzu"] = _default_engine
+                return _default_engine
+        except Exception, e:
+            message = ("Exception while initializing sapi5_daanzu engine:"
+                       " %s" % (e,))
+            log.exception(message)
+            if name:
+                raise EngineError(message)
+
+    if not name or name == "kaldi":
+        # Attempt to retrieve the daanzu sapi5 back-end.
+        try:
+            from .backend_kaldi import is_engine_available
+            from .backend_kaldi import get_engine as get_specific_engine
+            if is_engine_available(**kwargs):
+                _default_engine = get_specific_engine(**kwargs)
+                _engines_by_name["kaldi"] = _default_engine
+                return _default_engine
+        except Exception, e:
+            message = ("Exception while initializing kaldi engine:"
+                       " %s" % (e,))
+            log.exception(message)
             if name:
                 raise EngineError(message)
 
@@ -86,22 +129,3 @@ def get_engine(name=None):
         raise EngineError("No usable engines found.")
     else:
         raise EngineError("Requested engine %r not available." % (name,))
-
-
-#---------------------------------------------------------------------------
-
-_default_engine = None
-_engines_by_name = {}
-
-def register_engine_init(engine):
-    """
-        Register initialization of an engine.
-
-        This function sets the default engine to the first engine
-        initialized.
-
-    """
-
-    global _default_engine
-    if not _default_engine:
-        _default_engine = engine

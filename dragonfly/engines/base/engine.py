@@ -27,8 +27,6 @@ EngineBase class
 import logging
 from .timer import Timer
 
-import dragonfly.engines
-
 
 #---------------------------------------------------------------------------
 
@@ -65,9 +63,6 @@ class EngineBase(object):
     #-----------------------------------------------------------------------
 
     def __init__(self):
-        # Register initialization of this engine.
-        dragonfly.engines.register_engine_init(self)
-
         self._grammar_wrappers = {}
 
 #    def __del__(self):
@@ -86,6 +81,15 @@ class EngineBase(object):
     def name(self):
         """ The human-readable name of this engine. """
         return self._name
+
+    @property
+    def grammars(self):
+        """ Grammars loaded into this engine. """
+        # Return a list of each GrammarWrapper's Grammar object.
+        return list(map(
+            lambda w: w.grammar,
+            self._grammar_wrappers.values()
+        ))
 
     def connect(self):
         """ Connect to back-end SR engine. """

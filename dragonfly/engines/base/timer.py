@@ -32,8 +32,6 @@ import logging
 
 class Timer(object):
 
-    _log = logging.getLogger("engine.timer")
-
     def __init__(self, function, interval, manager):
         self.function = function
         self.interval = interval
@@ -61,14 +59,15 @@ class Timer(object):
         try:
             self.function()
         except Exception, e:
-            self._log.exception("Exception during timer callback: %s" % (e,))
+            logging.getLogger("timer").exception("Exception during timer callback: e"
+                                       % (e,))
 
 
 class TimerManagerBase(object):
     """
     """
 
-    _log = logging.getLogger("engine.timer")
+    _log = logging.getLogger("timer")
 
     def __init__(self, interval, engine):
         """

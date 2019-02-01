@@ -26,10 +26,9 @@ This class is used to store the recognized results of dictation elements
 within voice-commands.  It offers access to both the raw spoken-form words 
 and be formatted written-form text.
 
-The formatted text can be retrieved using
-:meth:`~DictationContainerBase.format` or simply by  calling ``str(...)``
-on a dictation container object. A tuple of the raw  spoken words can be
-retrieved using :attr:`~DictationContainerBase.words`.
+The formatted text can be retrieved using :meth:`.format` or simply by 
+calling ``str(...)`` on a dictation container object. A tuple of the raw 
+spoken words can be retrieved using :meth:`.words`.
 
 """
 
@@ -60,21 +59,21 @@ class DictationContainerBase(object):
             :type words: sequence-of-unicode
 
         """
-        self._words = tuple(words)
+        self._words = words
         self._formatted = None
 
     def __str__(self):
-        return unicode(self).encode("windows-1252")
+        if self._formatted is None:
+            self._formatted = self.format()
+        return str(self._formatted)
 
     def __unicode__(self):
         if self._formatted is None:
             self._formatted = self.format()
-        return self._formatted
+        return unicode(self._formatted)
 
     def __repr__(self):
-        message = u"%s(%s)" % (self.__class__.__name__,
-                               u", ".join(self._words))
-        return message.encode("windows-1252")
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(self._words))
 
     @property
     def words(self):
@@ -82,5 +81,5 @@ class DictationContainerBase(object):
         return self._words
 
     def format(self):
-        """ Format and return this dictation as a Unicode object. """
+        """ Format and return this dictation. """
         return u" ".join(self._words)
